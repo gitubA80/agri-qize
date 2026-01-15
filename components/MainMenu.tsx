@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, GameSettings } from '../types';
 import { playSound, SOUNDS } from '../utils/sounds';
+import AdBanner from './AdBanner';
 
 interface MainMenuProps {
   user: User;
@@ -33,7 +34,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ user, onStartGame, onLogout, settin
        </header>
 
        {/* Main Content */}
-       <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-6 animate-slideInUp">
+       <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-6 animate-slideInUp overflow-y-auto no-scrollbar">
           
           {/* Logo Section */}
           <div className="mb-10 text-center relative">
@@ -60,16 +61,18 @@ const MainMenu: React.FC<MainMenuProps> = ({ user, onStartGame, onLogout, settin
           </button>
 
           {/* Grid Options */}
-          <div className="grid grid-cols-2 gap-4 w-full max-w-md">
+          <div className="grid grid-cols-2 gap-4 w-full max-w-md mb-8">
              <MenuButton icon="🏆" label="Leaderboard" onClick={() => playSound(SOUNDS.MENU_CLICK)} />
              <MenuButton icon="⚙️" label="Settings" onClick={() => { playSound(SOUNDS.MENU_CLICK); setIsSettingsOpen(true); }} />
              <MenuButton icon="📘" label="Learn Rules" onClick={() => playSound(SOUNDS.MENU_CLICK)} />
              <MenuButton icon="👤" label="Profile" onClick={() => playSound(SOUNDS.MENU_CLICK)} />
           </div>
+
+          <AdBanner className="mb-4" />
        </main>
        
        {/* Footer */}
-       <footer className="relative z-10 p-4 text-center text-slate-600 text-xs">
+       <footer className="relative z-10 p-4 text-center text-slate-600 text-xs border-t border-slate-900/50">
           Agri KBC © 2024. Designed for Agriculture Students.
        </footer>
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User } from '../types';
+import AdBanner from './AdBanner';
 
 interface AuthScreenProps {
   onLogin: (user: User) => void;
@@ -24,7 +25,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin }) => {
       {/* Background decoration */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
       
-      <div className="z-10 w-full max-w-md animate-zoomIn">
+      <div className="z-10 w-full max-w-md animate-zoomIn flex flex-col">
         <div className="text-center mb-8">
           <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-purple-700 to-indigo-900 border-4 border-amber-500 shadow-[0_0_30px_rgba(245,158,11,0.5)] flex items-center justify-center mb-4">
              <span className="text-4xl">🌾</span>
@@ -33,7 +34,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin }) => {
           <p className="text-slate-400 text-sm tracking-wider">Authentication Required</p>
         </div>
 
-        <div className="bg-slate-900/80 backdrop-blur-md border border-amber-600/30 rounded-xl p-8 shadow-2xl relative overflow-hidden">
+        <div className="bg-slate-900/80 backdrop-blur-md border border-amber-600/30 rounded-xl p-8 shadow-2xl relative overflow-hidden mb-8">
           {/* Top accent line */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
           
@@ -73,7 +74,9 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin }) => {
           </form>
         </div>
         
-        <div className="mt-8 text-center text-slate-500 text-xs">
+        <AdBanner className="mt-auto" />
+        
+        <div className="mt-4 text-center text-slate-500 text-xs">
           By logging in, you agree to the Terms of Service. <br/>
           This is an educational agriculture quiz.
         </div>

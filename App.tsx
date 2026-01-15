@@ -6,6 +6,7 @@ import LifelineButton, { AudienceGraph } from './components/Lifelines';
 import AuthScreen from './components/AuthScreen';
 import MainMenu from './components/MainMenu';
 import { playSound, SOUNDS } from './utils/sounds';
+import AdBanner from './components/AdBanner';
 
 // Icons
 const Icon5050 = () => <span className="font-bold text-xs md:text-sm">50:50</span>;
@@ -310,6 +311,7 @@ function App() {
                     </button>
                   </div>
               </div>
+              <AdBanner className="mt-8" />
           </div>
       )
   }
@@ -381,39 +383,42 @@ function App() {
             </div>
         </div>
 
-        <div className="p-6 bg-slate-950 border-t border-slate-800 flex justify-center gap-4 md:gap-8">
-            <LifelineButton 
-              type="50:50" 
-              label="50:50" 
-              icon={<Icon5050 />} 
-              isUsed={gameState.lifelines.fiftyFifty} 
-              isActive={false}
-              onUse={() => !gameState.isLocked && use5050()} 
-            />
-            <LifelineButton 
-              type="audience" 
-              label="Audience Poll" 
-              icon={<IconAudience />} 
-              isUsed={gameState.lifelines.audiencePoll} 
-              isActive={showAudienceModal}
-              onUse={() => !gameState.isLocked && useAudience()} 
-            />
-            <LifelineButton 
-              type="phone" 
-              label="Phone A Friend" 
-              icon={<IconPhone />} 
-              isUsed={gameState.lifelines.phoneAFriend} 
-              isActive={showPhoneModal}
-              onUse={() => !gameState.isLocked && usePhone()} 
-            />
-            <LifelineButton 
-              type="double" 
-              label="Double Dip" 
-              icon={<IconDouble />} 
-              isUsed={gameState.lifelines.doubleDip} 
-              isActive={gameState.doubleDipActive}
-              onUse={() => !gameState.isLocked && useDoubleDip()} 
-            />
+        <div className="p-6 bg-slate-950 border-t border-slate-800 flex flex-col items-center">
+            <div className="flex justify-center gap-4 md:gap-8 mb-4">
+                <LifelineButton 
+                  type="50:50" 
+                  label="50:50" 
+                  icon={<Icon5050 />} 
+                  isUsed={gameState.lifelines.fiftyFifty} 
+                  isActive={false}
+                  onUse={() => !gameState.isLocked && use5050()} 
+                />
+                <LifelineButton 
+                  type="audience" 
+                  label="Audience Poll" 
+                  icon={<IconAudience />} 
+                  isUsed={gameState.lifelines.audiencePoll} 
+                  isActive={showAudienceModal}
+                  onUse={() => !gameState.isLocked && useAudience()} 
+                />
+                <LifelineButton 
+                  type="phone" 
+                  label="Phone A Friend" 
+                  icon={<IconPhone />} 
+                  isUsed={gameState.lifelines.phoneAFriend} 
+                  isActive={showPhoneModal}
+                  onUse={() => !gameState.isLocked && usePhone()} 
+                />
+                <LifelineButton 
+                  type="double" 
+                  label="Double Dip" 
+                  icon={<IconDouble />} 
+                  isUsed={gameState.lifelines.doubleDip} 
+                  isActive={gameState.doubleDipActive}
+                  onUse={() => !gameState.isLocked && useDoubleDip()} 
+                />
+            </div>
+            <AdBanner className="mt-2" />
         </div>
       </div>
 
