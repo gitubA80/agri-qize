@@ -1,5 +1,7 @@
+export type QuizSection = 'Agriculture Core' | 'Rural Sociology';
+
 export interface Question {
-  id: number;
+  id: string | number;
   question: string;
   questionHindi?: string;
   options: string[];
@@ -7,6 +9,7 @@ export interface Question {
   category: string;
   explanation: string;
   difficulty: 'easy' | 'medium' | 'hard';
+  subject?: string;
 }
 
 export interface User {
@@ -17,6 +20,7 @@ export interface User {
 
 export interface GameSettings {
   timerDuration: number;
+  section: QuizSection;
   availableLifelines: {
     fiftyFifty: boolean;
     audiencePoll: boolean;
@@ -29,7 +33,7 @@ export interface GameState {
   currentQuestionIndex: number;
   selectedOption: number | null;
   isLocked: boolean;
-  isCorrect: boolean | null; // null = pending/thinking
+  isCorrect: boolean | null;
   score: number;
   lifelines: {
     fiftyFifty: boolean;
@@ -37,18 +41,17 @@ export interface GameState {
     phoneAFriend: boolean;
     doubleDip: boolean;
   };
-  // 'intro' removed here as it is handled by App navigation now
   gameStatus: 'playing' | 'won' | 'lost'; 
   activeLifeline: string | null;
-  eliminatedOptions: number[]; // For 50:50
+  eliminatedOptions: number[];
   doubleDipActive: boolean;
   moneyWon: number;
 }
 
 export const PRIZE_LADDER = [
-  1000, 2000, 3000, 5000, 10000, // Safe Haven 1 (Index 4)
-  20000, 40000, 80000, 160000, 320000, // Safe Haven 2 (Index 9)
-  640000, 1250000, 2500000, 5000000, 10000000, 70000000 // 1 Crore (Index 14)
+  1000, 2000, 3000, 5000, 10000, 
+  20000, 40000, 80000, 160000, 320000, 
+  640000, 1250000, 2500000, 5000000, 10000000, 70000000 
 ];
 
 export const SAFE_HAVENS = [4, 9, 14];

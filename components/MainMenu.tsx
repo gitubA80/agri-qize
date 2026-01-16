@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, GameSettings } from '../types';
+import { User, GameSettings, QuizSection } from '../types';
 import { playSound, SOUNDS } from '../utils/sounds';
 import AdBanner from './AdBanner';
 
@@ -9,9 +9,10 @@ interface MainMenuProps {
   onLogout: () => void;
   settings: GameSettings;
   onUpdateSettings: (newSettings: GameSettings) => void;
+  isLoading: boolean;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ user, onStartGame, onLogout, settings, onUpdateSettings }) => {
+const MainMenu: React.FC<MainMenuProps> = ({ user, onStartGame, onLogout, settings, onUpdateSettings, isLoading }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
@@ -26,36 +27,56 @@ const MainMenu: React.FC<MainMenuProps> = ({ user, onStartGame, onLogout, settin
                 {user.name.charAt(0).toUpperCase()}
              </div>
              <div>
-                <p className="text-xs text-amber-400 uppercase tracking-wider">Welcome,</p>
+                <p className="text-xs text-amber-400 uppercase tracking-wider">Contestant</p>
                 <p className="font-bold text-white leading-none">{user.name}</p>
              </div>
           </div>
-          <button onClick={onLogout} className="text-slate-400 hover:text-white text-sm underline">Logout</button>
+          <button onClick={onLogout} className="text-slate-400 hover:text-white text-sm underline">Exit Stage</button>
        </header>
 
        {/* Main Content */}
        <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-6 animate-slideInUp overflow-y-auto no-scrollbar">
           
           {/* Logo Section */}
-          <div className="mb-10 text-center relative">
-             <div className="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-full bg-gradient-to-br from-indigo-600 to-purple-900 border-4 border-amber-400 shadow-[0_0_50px_rgba(124,58,237,0.6)] flex items-center justify-center animate-heartbeat z-20 relative">
-                <span className="text-6xl md:text-8xl filter drop-shadow-lg">🌾</span>
+          <div className="mb-6 text-center relative">
+             <div className="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full bg-gradient-to-br from-indigo-600 to-purple-900 border-4 border-amber-400 shadow-[0_0_50px_rgba(124,58,237,0.6)] flex items-center justify-center animate-heartbeat z-20 relative">
+                <span className="text-6xl md:text-7xl filter drop-shadow-lg">🌾</span>
              </div>
              <div className="absolute -inset-4 bg-amber-500/20 rounded-full blur-xl animate-pulse"></div>
              <h1 className="mt-6 text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 uppercase tracking-widest drop-shadow-sm">
                 Agri KBC
              </h1>
-             <p className="text-blue-300 mt-2 font-light">The Path to 1 Crore Starts Here</p>
+             <p className="text-blue-300 mt-2 font-light">Choose Your Domain of Knowledge</p>
+          </div>
+
+          {/* Section Selection */}
+          <div className="flex gap-4 mb-8 w-full max-w-md">
+            {(['Agriculture Core', 'Rural Sociology'] as QuizSection[]).map(s => (
+              <button
+                key={s}
+                onClick={() => { playSound(SOUNDS.MENU_CLICK); onUpdateSettings({ ...settings, section: s }); }}
+                className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all font-bold text-sm uppercase tracking-wider ${
+                  settings.section === s 
+                    ? 'border-amber-500 bg-amber-600/20 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                    : 'border-slate-700 bg-slate-900 text-slate-500 hover:border-slate-500'
+                }`}
+              >
+                {s}
+              </button>
+            ))}
           </div>
 
           {/* Big Play Button */}
           <button 
              onClick={onStartGame}
-             className="group relative w-full max-w-xs mb-12"
+             disabled={isLoading}
+             className="group relative w-full max-w-xs mb-10 disabled:opacity-50 disabled:cursor-wait"
           >
              <div className="absolute inset-0 bg-amber-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-             <div className="relative px-7 py-6 bg-slate-900 rounded-full leading-none flex items-center justify-center border-2 border-amber-500 shadow-2xl overflow-hidden">
-                <span className="text-amber-500 group-hover:text-amber-300 font-bold text-2xl uppercase tracking-[0.2em] z-10 transition-colors">Play Now</span>
+             <div className="relative px-7 py-5 bg-slate-900 rounded-full leading-none flex items-center justify-center border-2 border-amber-500 shadow-2xl overflow-hidden">
+                <span className="text-amber-500 group-hover:text-amber-300 font-bold text-2xl uppercase tracking-[0.2em] z-10 transition-colors">
+                  {isLoading ? 'Preparing Stage...' : 'Play Now'}
+                </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-800/0 via-purple-800/50 to-purple-800/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
              </div>
           </button>
@@ -73,7 +94,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ user, onStartGame, onLogout, settin
        
        {/* Footer */}
        <footer className="relative z-10 p-4 text-center text-slate-600 text-xs border-t border-slate-900/50">
-          Agri KBC © 2024. Designed for Agriculture Students.
+          Agri KBC AI Engine. No Repeats Guaranteed.
        </footer>
 
        {/* Settings Modal */}
@@ -125,16 +146,12 @@ const SettingsModal: React.FC<{
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-zoomIn">
       <div className="bg-slate-900 border border-amber-500 rounded-xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Header */}
         <div className="bg-slate-800 p-4 border-b border-slate-700 flex justify-between items-center">
           <h2 className="text-xl font-bold text-amber-500 uppercase tracking-widest">Game Settings</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-white">&times;</button>
         </div>
 
-        {/* Body */}
         <div className="p-6 overflow-y-auto no-scrollbar space-y-8">
-          
-          {/* Timer Section */}
           <div>
             <label className="block text-sm font-bold text-slate-300 uppercase mb-3 tracking-wider">Timer Duration (Seconds)</label>
             <div className="grid grid-cols-4 gap-2">
@@ -154,7 +171,6 @@ const SettingsModal: React.FC<{
             </div>
           </div>
 
-          {/* Lifelines Section */}
           <div>
             <label className="block text-sm font-bold text-slate-300 uppercase mb-3 tracking-wider">Enable Lifelines</label>
             <div className="space-y-3">
@@ -182,10 +198,8 @@ const SettingsModal: React.FC<{
               ))}
             </div>
           </div>
-
         </div>
 
-        {/* Footer */}
         <div className="p-4 bg-slate-800 border-t border-slate-700">
           <button 
             onClick={() => onSave(localSettings)}
@@ -194,7 +208,6 @@ const SettingsModal: React.FC<{
             Save & Apply
           </button>
         </div>
-
       </div>
     </div>
   );
