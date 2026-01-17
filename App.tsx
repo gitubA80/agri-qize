@@ -21,13 +21,29 @@ const IconPhone = () => (
 );
 const IconDouble = () => <span className="font-bold text-xs md:text-sm">x2</span>;
 
-type AppMode = 'auth' | 'menu' | 'game';
+// Error Screen Component
+const ErrorScreen: React.FC<{ message: string; onRetry: () => void; onHome: () => void }> = ({ message, onRetry, onHome }) => (
+  <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 p-6 text-center animate-zoomIn">
+    <div className="w-24 h-24 mb-6 rounded-full bg-red-900/50 border-4 border-red-500 flex items-center justify-center text-4xl shadow-[0_0_30px_rgba(239,68,68,0.5)]">
+      ⚠️
+    </div>
+    <h2 className="text-2xl font-bold text-red-500 mb-2 uppercase tracking-widest">System Failure</h2>
+    <p className="text-slate-300 max-w-md mb-8">{message}</p>
+    <div className="flex gap-4">
+      <button onClick={onRetry} className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded font-bold uppercase tracking-wider">Retry</button>
+      <button onClick={onHome} className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded font-bold uppercase tracking-wider">Main Menu</button>
+    </div>
+  </div>
+);
+
+type AppMode = 'auth' | 'menu' | 'game' | 'error';
 
 function App() {
   const [appMode, setAppMode] = useState<AppMode>('auth');
   const [user, setUser] = useState<User | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const [settings, setSettings] = useState<GameSettings>({
     timerDuration: 45,
@@ -98,6 +114,8 @@ function App() {
   const startGame = async () => {
     if (!user) return;
     setIsLoadingQuestions(true);
+    setErrorMessage('');
+    
     try {
       const sessionId = Math.random().toString(36).substring(7);
       const newQuestions = await generateQuizQuestions(settings.section, user.phone, sessionId);
@@ -122,8 +140,9 @@ function App() {
       });
       setTimer(settings.timerDuration);
       setAppMode('game');
-    } catch (err) {
-      alert("AI generator busy. Please try again in a moment.");
+    } catch (err: any) {
+      setErrorMessage(err.message || "An unexpected error occurred.");
+      setAppMode('error');
     } finally {
       setIsLoadingQuestions(false);
     }
@@ -234,6 +253,10 @@ function App() {
     return 'bg-slate-800 border-slate-500 text-white hover:bg-slate-700 hover:border-amber-400';
   };
 
+  if (appMode === 'error') {
+    return <ErrorScreen message={errorMessage} onRetry={startGame} onHome={() => setAppMode('menu')} />;
+  }
+
   if (appMode === 'auth') return <AuthScreen onLogin={handleLogin} />;
 
   if (appMode === 'menu' && user) {
@@ -278,7 +301,19 @@ function App() {
       )
   }
 
-  if (!currentQ) return <div className="min-h-screen flex items-center justify-center bg-slate-950 text-amber-500">Loading Stage...</div>;
+  // Loading Screen for Quiz Generation
+  if (isLoadingQuestions) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-white">
+        <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <h2 className="text-xl font-bold text-amber-500 tracking-widest animate-pulse">Generating Questions...</h2>
+        <p className="text-slate-500 text-sm mt-2">Consulting the AI Engine</p>
+      </div>
+    );
+  }
+
+  // Fallback for empty state or immediate error not caught
+  if (!currentQ && appMode === 'game') return null; // Should be handled by ErrorScreen, but safety first
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row relative overflow-hidden">

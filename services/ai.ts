@@ -1,7 +1,31 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Question, QuizSection } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to safely get the API Key in browser environments
+const getApiKey = () => {
+  // 1. Try standard process.env (in case of build tools)
+  if (typeof process !== 'undefined' && process.env && process.env.GEMINI_API_KEY) {
+    return process.env.GEMINI_API_KEY;
+  }
+  // 2. Try window.process (shimmed in index.html)
+  // @ts-ignore
+  if (typeof window !== 'undefined' && window.process?.env?.GEMINI_API_KEY) {
+    // @ts-ignore
+    return window.process.env.GEMINI_API_KEY;
+  }
+  // 3. Try Vite style (common in React apps)
+  // @ts-ignore
+  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) {
+    // @ts-ignore
+    return import.meta.env.VITE_GEMINI_API_KEY;
+  }
+  return "";
+};
+
+const apiKey = getApiKey();
+
+// Initialize AI only if key exists (handled in function call otherwise)
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 const SYSTEM_INSTRUCTION = `
 You are an Advanced Quiz Generator AI for Agriculture students.
@@ -39,6 +63,10 @@ export async function generateQuizQuestions(
   userId: string, 
   sessionId: string
 ): Promise<Question[]> {
+  if (!ai) {
+    throw new Error("Missing API Key. Please add GEMINI_API_KEY to your Netlify Environment Variables.");
+  }
+
   const prompt = `
     Generate 16 unique questions for the "${section}" section.
     User context: ID ${userId}, Session ${sessionId}, Timestamp ${Date.now()}.
@@ -46,43 +74,52 @@ export async function generateQuizQuestions(
     The difficulty must progressively increase from question 1 to 16.
   `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3-pro-preview",
-    contents: prompt,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            question: { type: Type.STRING },
-            questionHindi: { type: Type.STRING },
-            options: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "Exactly 4 options"
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash-latest", // Use stable model
+      contents: prompt,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              question: { type: Type.STRING },
+              questionHindi: { type: Type.STRING },
+              options: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
+                description: "Exactly 4 options"
+              },
+              correctAnswerIndex: { type: Type.INTEGER, description: "0-3 index of the correct option" },
+              category: { type: Type.STRING },
+              explanation: { type: Type.STRING },
+              difficulty: { type: Type.STRING, enum: ["easy", "medium", "hard"] }
             },
-            correctAnswerIndex: { type: Type.INTEGER, description: "0-3 index of the correct option" },
-            category: { type: Type.STRING },
-            explanation: { type: Type.STRING },
-            difficulty: { type: Type.STRING, enum: ["easy", "medium", "hard"] }
-          },
-          required: ["question", "options", "correctAnswerIndex", "category", "explanation", "difficulty"]
+            required: ["question", "options", "correctAnswerIndex", "category", "explanation", "difficulty"]
+          }
         }
       }
-    }
-  });
+    });
 
-  try {
     const rawQuestions = JSON.parse(response.text || "[]");
+    
+    if (!Array.isArray(rawQuestions) || rawQuestions.length === 0) {
+        throw new Error("AI returned empty question set");
+    }
+
     return rawQuestions.map((q: any, index: number) => ({
       ...q,
       id: `${sessionId}-${index}`
     }));
-  } catch (error) {
-    console.error("Failed to parse AI response:", error);
-    throw new Error("Could not generate questions. Please try again.");
+  } catch (error: any) {
+    console.error("AI Generation Error:", error);
+    // Provide a clearer error message for the UI
+    if (error.message.includes("API Key")) {
+        throw error;
+    }
+    throw new Error("Failed to generate quiz. Please check your connection and try again.");
   }
 }

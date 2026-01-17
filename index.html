@@ -7,6 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5052529092086881" crossorigin="anonymous"></script>
+    
+    <!-- POLYFILL: Fixes 'process is not defined' crash on Netlify -->
+    <script>
+      window.process = window.process || { env: {} };
+    </script>
+
     <style>
       body {
         font-family: 'Roboto', sans-serif;
@@ -14,6 +20,28 @@
         color: white;
         overflow-x: hidden;
       }
+      /* Initial Loading Spinner */
+      #root:empty {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #020617 80%);
+      }
+      #root:empty::after {
+        content: "";
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f59e0b;
+        border-top: 5px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
       /* Custom Animations */
       @keyframes heartbeat {
         0%, 100% { transform: scale(1); }
@@ -71,10 +99,11 @@
   <script type="importmap">
 {
   "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.37.0"
+    "react/": "https://esm.sh/react@18.3.1/",
+    "react": "https://esm.sh/react@18.3.1",
+    "react-dom/": "https://esm.sh/react-dom@18.3.1/",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "@google/genai": "https://esm.sh/@google/genai@0.1.1"
   }
 }
 </script>
